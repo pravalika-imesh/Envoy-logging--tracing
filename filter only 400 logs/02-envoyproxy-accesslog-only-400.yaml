@@ -1,0 +1,23 @@
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: accesslog-only-400
+  namespace: envoy-gateway-system
+spec:
+  telemetry:
+    accessLog:
+      settings:
+      - format:
+          type: JSON
+          json:
+            method: '%REQ(:METHOD)%'
+            path: '%REQ(X-ENVOY-ORIGINAL-PATH?:PATH)%'
+            response_code: '%RESPONSE_CODE%'
+            response_flags: '%RESPONSE_FLAGS%'
+            upstream_host: '%UPSTREAM_HOST%'
+        matches:
+        - response.code == 400
+        sinks:
+        - type: File
+          file:
+            path: /dev/stdout

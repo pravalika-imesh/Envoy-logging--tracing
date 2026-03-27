@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: trafficgen-20m
+  namespace: default
+  labels:
+    app: trafficgen-20m
+spec:
+  restartPolicy: Never
+  containers:
+  - name: curl
+    image: curlimages/curl:8.12.1
+    command:
+    - sh
+    - -c
+    - |
+      end=$(($(date +%s)+1200))
+      while [ $(date +%s) -lt "$end" ]; do
+        curl -s -o /dev/null http://demo-gateway-proxy.envoy-gateway-system.svc.cluster.local/get
+        curl -s -o /dev/null http://demo-gateway-proxy.envoy-gateway-system.svc.cluster.local/status/400
+        curl -s -o /dev/null http://demo-gateway-proxy.envoy-gateway-system.svc.cluster.local/status/500
+        sleep 1
+      done

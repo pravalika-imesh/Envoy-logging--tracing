@@ -1,0 +1,25 @@
+Apply in this order:
+
+kubectl apply -f "filter only 400 logs/01-httpbin.yaml"
+kubectl apply -f "filter only 400 logs/02-envoyproxy-accesslog-only-400.yaml"
+kubectl apply -f "filter only 400 logs/03-gatewayclass-envoy.yaml"
+kubectl apply -f "filter only 400 logs/04-gateway-proxy-service.yaml"
+kubectl apply -f "filter only 400 logs/04-gateway-and-route.yaml"
+
+Start the 20 minute traffic pod:
+
+kubectl delete pod trafficgen-20m -n default --ignore-not-found=true
+kubectl apply -f "filter only 400 logs/05-trafficgen-20m-pod.yaml"
+
+Watch only 400 logs live:
+
+kubectl logs -f --tail=0 -n envoy-gateway-system -l gateway.envoyproxy.io/owning-gateway-namespace=default,gateway.envoyproxy.io/owning-gateway-name=demo-gateway -c envoy | grep --line-buffered '"response_code":400'
+
+Watch all response code logs live:
+
+kubectl logs -f --tail=0 -n envoy-gateway-system -l gateway.envoyproxy.io/owning-gateway-namespace=default,gateway.envoyproxy.io/owning-gateway-name=demo-gateway -c envoy | grep --line-buffered '"response_code":'
+
+Check the traffic pod:
+
+kubectl get pod trafficgen-20m -n default
+kubectl logs trafficgen-20m -n default

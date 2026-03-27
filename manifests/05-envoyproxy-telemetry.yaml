@@ -1,0 +1,33 @@
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: telemetry
+  namespace: envoy-gateway-system
+spec:
+  telemetry:
+    accessLog:
+      settings:
+      - format:
+          type: JSON
+          json:
+            method:         '%REQ(:METHOD)%'
+            path:           '%REQ(X-ENVOY-ORIGINAL-PATH?:PATH)%'
+            protocol:       '%PROTOCOL%'
+            response_code:  '%RESPONSE_CODE%'
+            response_flags: '%RESPONSE_FLAGS%'
+            bytes_received: '%BYTES_RECEIVED%'
+            bytes_sent:     '%BYTES_SENT%'
+            duration_ms:    '%DURATION%'
+            upstream_host:  '%UPSTREAM_HOST%'
+            request_id:     '%REQ(X-REQUEST-ID)%'
+            trace_id:       '%REQ(X-B3-TRACEID)%'
+        sinks:
+        - type: File
+          file:
+            path: /dev/stdout
+    tracing:
+      samplingRate: 100
+      provider:
+        type: OpenTelemetry
+        host: jaeger.observability.svc.cluster.local
+        port: 4317
